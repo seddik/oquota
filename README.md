@@ -161,14 +161,6 @@ The popup documents the state circles in value order:
 - `🟠` Very high
 - `🔴` Critical
 
-## Acknowledgements
-
-The GitHub Copilot quota integration was inspired by:
-
-- `kasuken/vscode-copilot-insights`
-
-Thanks to `kasuken` for publishing the approach publicly.
-
 ## Contributions
 
 Contributions are welcome when they stay focused on quota visibility, pacing, and practical status bar feedback.
@@ -193,3 +185,8 @@ vsce package
 Issues and feature requests:
 
 https://github.com/seddik/oquota/issues
+
+## Credits
+
+- GitHub Copilot quota approach inspired by `kasuken/vscode-copilot-insights`: https://github.com/kasuken/vscode-copilot-insights
+- Icon attribution: Okaicon on Flaticon https://www.flaticon.com/authors/okaikon
