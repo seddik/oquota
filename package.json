@@ -1,0 +1,272 @@
+{
+  "name": "oquota",
+  "displayName": "oQuota",
+  "description": "Quota and progress counters for time windows, deadlines, and GitHub Copilot insights directly in the VS Code status bar.",
+  "version": "0.1.0",
+  "publisher": "seddik",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": {
+    "name": "LARABA MOHAMMED SEDDIK"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seddik/oquota.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seddik/oquota/issues"
+  },
+  "homepage": "https://github.com/seddik/oquota#readme",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#1f5f8b",
+    "theme": "dark"
+  },
+  "pricing": "Free",
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "quota",
+    "progress",
+    "status bar",
+    "statusbar",
+    "billing cycle",
+    "date range",
+    "deadline",
+    "day of year",
+    "year progress",
+    "workday",
+    "copilot",
+    "github copilot",
+    "copilot quota",
+    "copilot usage",
+    "copilot premium interactions",
+    "quota insights",
+    "usage pacing",
+    "burn rate",
+    "forecast",
+    "productivity"
+  ],
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "extensionKind": [
+    "ui"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "oquota.openSettings",
+        "title": "Open Settings",
+        "category": "oQuota",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "oquota.configureCounter",
+        "title": "Configure Counter",
+        "category": "oQuota",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "oquota.addCounter",
+        "title": "Add Counter",
+        "category": "oQuota",
+        "icon": "$(add)"
+      },
+      {
+        "command": "oquota.removeCounter",
+        "title": "Remove Counter",
+        "category": "oQuota",
+        "icon": "$(remove)"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "oQuota",
+        "properties": {
+          "oquota.refreshIntervalSeconds": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 3600,
+            "scope": "window",
+            "order": 1,
+            "markdownDescription": "Refresh interval in seconds. Set to `0` to use adaptive refresh: Copilot every 60 seconds, workday counters every 5 minutes, and the other counters every hour."
+          },
+          "oquota.percentDecimals": {
+            "type": "integer",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 2,
+            "scope": "window",
+            "order": 2,
+            "markdownDescription": "How many decimal places to show in percentage text."
+          },
+          "oquota.counters": {
+            "type": "array",
+            "scope": "window",
+            "order": 3,
+            "default": [
+              {
+                "enabled": true,
+                "label": "Day of Year",
+                "emoji": "📆",
+                "mode": "day-of-year",
+                "monthlyCycleDay": 1,
+                "dailyStartTime": "09:00",
+                "dailyEndTime": "17:00",
+                "rangeStartDate": "2026-01-01",
+                "rangeEndDate": "2026-12-31",
+                "deadlineDate": "2026-12-31",
+                "copilotDisplayMode": "consumption"
+              }
+            ],
+            "markdownDescription": "Dynamic list of counters shown on the right side of the status bar. Clicking a counter or running the oQuota commands is usually more convenient than editing the raw array manually.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Show this counter in the status bar."
+                },
+                "label": {
+                  "type": "string",
+                  "default": "Day of Year",
+                  "description": "Optional short label shown in the status bar. If empty, no label text is shown."
+                },
+                "emoji": {
+                  "type": "string",
+                  "default": "📆",
+                  "description": "Optional emoji prefix. Copilot progress modes use the colored state circle instead of this emoji."
+                },
+                "mode": {
+                  "type": "string",
+                  "default": "day-of-year",
+                  "enum": [
+                    "day-of-year",
+                    "month",
+                    "year",
+                    "day",
+                    "range",
+                    "deadline",
+                    "copilot"
+                  ],
+                  "enumItemLabels": [
+                    "Current day of year",
+                    "Monthly billing cycle",
+                    "Current calendar year",
+                    "Current workday",
+                    "Custom date range",
+                    "Deadline countdown",
+                    "GitHub Copilot quota"
+                  ],
+                  "markdownEnumDescriptions": [
+                    "Show the current day number within the current year and the year progress.",
+                    "Calculate progress in the current monthly cycle using `monthlyCycleDay`.",
+                    "Calculate progress from January 1 to December 31 of the current year.",
+                    "Calculate progress in the current day using `dailyStartTime` and `dailyEndTime`.",
+                    "Calculate progress between `rangeStartDate` and `rangeEndDate`.",
+                    "Count down to a future date using `deadlineDate`.",
+                    "Show GitHub Copilot premium interactions using `copilotDisplayMode`."
+                  ]
+                },
+                "monthlyCycleDay": {
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 31,
+                  "description": "Billing cycle day used by month mode."
+                },
+                "dailyStartTime": {
+                  "type": "string",
+                  "default": "09:00",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                  "patternErrorMessage": "Use 24-hour HH:mm format, for example 09:00.",
+                  "description": "Start time used by day mode."
+                },
+                "dailyEndTime": {
+                  "type": "string",
+                  "default": "17:00",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                  "patternErrorMessage": "Use 24-hour HH:mm format, for example 17:00.",
+                  "description": "End time used by day mode."
+                },
+                "rangeStartDate": {
+                  "type": "string",
+                  "format": "date",
+                  "default": "2026-01-01",
+                  "description": "Start date used by range mode."
+                },
+                "rangeEndDate": {
+                  "type": "string",
+                  "format": "date",
+                  "default": "2026-12-31",
+                  "description": "Inclusive end date used by range mode."
+                },
+                "deadlineDate": {
+                  "type": "string",
+                  "format": "date",
+                  "default": "2026-12-31",
+                  "description": "Future date used by deadline mode."
+                },
+                "copilotDisplayMode": {
+                  "type": "string",
+                  "default": "consumption",
+                  "enum": [
+                    "raw-remaining",
+                    "raw-consumption",
+                    "consumption",
+                    "remaining-pool",
+                    "average-calibration"
+                  ],
+                  "enumItemLabels": [
+                    "Raw Remaining",
+                    "Raw Consumption",
+                    "Consumption",
+                    "Remaining Pool",
+                    "Average Calibration"
+                  ],
+                  "markdownEnumDescriptions": [
+                    "Show remaining premium interactions as the raw value and percentage, for example `1405 (93.6%)`.",
+                    "Show consumed premium interactions as the raw value and percentage, for example `95 (6%)`.",
+                    "Show local tracked consumption against total consumed quota with the colored cycle-pace indicator.",
+                    "Show the remaining pace pool still available in the current billing cycle.",
+                    "Show average daily burn against the ideal daily pace and project whether quota ends early or late."
+                  ],
+                  "description": "Display style used by Copilot mode."
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.8.3"
+  },
+  "markdown": "github",
+  "qna": "marketplace"
+}
