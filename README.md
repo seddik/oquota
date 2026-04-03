@@ -143,8 +143,8 @@ Available Copilot display modes:
 
 - `raw-remaining`: shows remaining premium interactions as the raw value and percentage, for example `1405 (93.6%)`
 - `raw-consumption`: shows consumed premium interactions as the raw value and percentage, for example `95 (6.0%)`
-- `consumption`: shows `theoretical cycle progress` beside `actual consumed percent`, for example `10.0% 6.0%`
-- `remaining-pool`: shows `today consumption/pool size (percent)` with the pool bar, for example `25/250 (10.0%)`
+- `consumption`: shows `theoretical cycle progress by billing-cycle day count` beside `actual consumed percent`, for example `10.0% 6.0%`
+- `remaining-pool`: shows `today consumption/pool size (percent)` with the pool bar, where pool size is derived from the billing-cycle day target and the displayed percentage caps at `100%` once the pool is exhausted, for example `25/250 (10.0%)`
 - `average-calibration`: shows `today consumption/average consumption (percent)` with the average bar and projected days, for example `25/50 (50.0%) +2d`
 
 If there is not enough prior local history yet, oQuota anchors consumption tracking from the first locally recorded snapshot so the consumption view starts at `0%` and then grows from there.

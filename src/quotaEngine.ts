@@ -134,16 +134,21 @@ function evaluateCopilotCounter(
 
   const trackedConsumptionPercent = toPercent(data.todayConsumed, data.entitlement);
   const totalConsumedPercent = data.percentUsed;
-  const expectedConsumedPercent = data.billingCycleProgress * 100;
+  const cycleTotalDays = Math.max(Math.round(data.elapsedDays + data.remainingDays), data.cycleDayNumber, 1);
+  const expectedConsumedPercent = Math.min((data.cycleDayNumber / cycleTotalDays) * 100, 100);
+  const expectedUsedValue = (expectedConsumedPercent / 100) * data.entitlement;
+  const usedBeforeToday = Math.max(data.used - data.todayConsumed, 0);
   const remainingPoolPercent = Math.max(expectedConsumedPercent - totalConsumedPercent, 0);
-  const remainingPoolValue = (remainingPoolPercent / 100) * data.entitlement;
-  const poolConsumptionRatio = remainingPoolValue > 0 ? data.todayConsumed / remainingPoolValue : (data.todayConsumed > 0 ? 1 : 0);
+  const remainingPoolValue = Math.max(expectedUsedValue - data.used, 0);
+  const todayPoolValue = Math.max(expectedUsedValue - usedBeforeToday, 0);
+  const poolConsumptionRatio = todayPoolValue > 0 ? data.todayConsumed / todayPoolValue : (data.todayConsumed > 0 ? 1 : 0);
+  const poolPercentUsed = todayPoolValue > 0 ? toPercent(data.todayConsumed, todayPoolValue) : (data.todayConsumed > 0 ? 100 : 0);
+  const poolOverflowRequests = Math.max(data.todayConsumed - todayPoolValue, 0);
   const headroomPercentOfBudget = expectedConsumedPercent > 0
     ? ((expectedConsumedPercent - totalConsumedPercent) / expectedConsumedPercent) * 100
     : 0;
   const paceIndicator = getPaceIndicator(headroomPercentOfBudget, totalConsumedPercent, expectedConsumedPercent);
   const poolBar = buildMiniBar(Math.min(Math.max(poolConsumptionRatio, 0), 1));
-  const cycleTotalDays = Math.max(data.elapsedDays + data.remainingDays, 1);
   const idealDailyPercent = 100 / cycleTotalDays;
   const actualAverageDailyPercent = data.cycleDayNumber > 0 ? totalConsumedPercent / data.cycleDayNumber : totalConsumedPercent;
   const averageConsumptionRatio = data.averageDailyConsumed > 0 ? data.todayConsumed / data.averageDailyConsumed : (data.todayConsumed > 0 ? 1 : 0);
@@ -175,9 +180,11 @@ function evaluateCopilotCounter(
       detailLine = `Today is ${formatCompactPercent(expectedConsumedPercent)} into the billing cycle | local tracked today ${formatCompactPercent(trackedConsumptionPercent)}`;
       break;
     case 'remaining-pool':
-      text = `${paceIndicator.emoji} ${formatCopilotLabelPrefix(counter)}${poolBar} ${formatCountValue(data.todayConsumed)}/${formatCountValue(remainingPoolValue)} (${formatCompactPercent(toPercent(data.todayConsumed, remainingPoolValue))})`.trim();
-      summaryLine = `Remaining pool: ${formatCountValue(data.todayConsumed)}/${formatCountValue(remainingPoolValue)} (${formatCompactPercent(toPercent(data.todayConsumed, remainingPoolValue))})`;
-      detailLine = `Pool size ${formatCountValue(remainingPoolValue)} | cycle pace target ${formatCompactPercent(expectedConsumedPercent)} | total consumed ${formatCompactPercent(totalConsumedPercent)}`;
+      text = `${paceIndicator.emoji} ${formatCopilotLabelPrefix(counter)}${poolBar} ${formatCountValue(data.todayConsumed)}/${formatCountValue(todayPoolValue)} (${formatCompactPercent(poolPercentUsed)})`.trim();
+      summaryLine = `Pool: ${formatCountValue(data.todayConsumed)}/${formatCountValue(todayPoolValue)} (${formatCompactPercent(poolPercentUsed)})`;
+      detailLine = poolOverflowRequests > 0
+        ? `Today's pool ${formatCountValue(todayPoolValue)} | overflow ${formatCountValue(poolOverflowRequests)} requests | cycle pace target ${formatCompactPercent(expectedConsumedPercent)}`
+        : `Today's pool ${formatCountValue(todayPoolValue)} | cycle pace target ${formatCompactPercent(expectedConsumedPercent)} | total consumed ${formatCompactPercent(totalConsumedPercent)}`;
       break;
     case 'average-calibration':
       text = `${calibrationIndicator.emoji} ${formatCopilotLabelPrefix(counter)}${averageBar} ${formatCountValue(data.todayConsumed)}/${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(toPercent(data.todayConsumed, data.averageDailyConsumed))}) ${formatSignedDays(projectedDayDelta)}`.trim();
@@ -217,8 +224,11 @@ function evaluateCopilotCounter(
       `Tracked local consumption: ${formatCompactPercent(trackedConsumptionPercent)}`,
       `Total consumed: ${formatCompactPercent(totalConsumedPercent)}`,
       `Theoretical cycle progress: ${formatCompactPercent(expectedConsumedPercent)}`,
-      `Remaining pool: ${formatCountValue(remainingPoolValue)} (${formatCompactPercent(remainingPoolPercent)})`,
-      `Today vs pool: ${formatCountValue(data.todayConsumed)}/${formatCountValue(remainingPoolValue)} (${formatCompactPercent(toPercent(data.todayConsumed, remainingPoolValue))})`,
+      `Expected used by now: ${formatCountValue(expectedUsedValue)}`,
+      `Used before today: ${formatCountValue(usedBeforeToday)}`,
+      `Remaining pool now: ${formatCountValue(remainingPoolValue)} (${formatCompactPercent(remainingPoolPercent)})`,
+      `Today vs pool: ${formatCountValue(data.todayConsumed)}/${formatCountValue(todayPoolValue)} (${formatCompactPercent(poolPercentUsed)})`,
+      poolOverflowRequests > 0 ? `Pool overflow: ${formatCountValue(poolOverflowRequests)} requests beyond the available pool.` : 'Pool overflow: none',
       `Average daily burn: ${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(actualAverageDailyPercent)})`,
       `Today vs average: ${formatCountValue(data.todayConsumed)}/${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(toPercent(data.todayConsumed, data.averageDailyConsumed))})`,
       `Ideal daily burn: ${formatCompactPercent(idealDailyPercent)}`,
