@@ -13,12 +13,17 @@ It is built for recurring visibility problems such as:
 
 Each counter is its own status bar item. Labels are optional. For Copilot `Consumption`, `Pool`, and `Average`, oQuota falls back to those captions when the label is empty.
 
+
+## Screenshot
+
+![oQuota screenshot](images/screen.png)
+
 ## Features
 
 - Flexible number of counters instead of a fixed three-slot layout
 - Default counter that shows the current day of the year
 - Monthly, yearly, workday, date-range, deadline, and Copilot modes
-- Adaptive refresh by default: Copilot every 60 seconds, workday counters every 5 minutes, everything else every hour
+- Fixed refresh cadence: Copilot every 60 seconds, workday counters every 60 seconds, everything else every hour
 - Add, configure, and remove counters from the Command Palette
 - Copilot progress modes with colored state circles, compact bars, and pacing projections
 - Local Copilot snapshot history used to anchor tracking from the first local observation
@@ -35,6 +40,7 @@ Each counter is its own status bar item. Labels are optional. For Copilot `Consu
 
 In Copilot modes, the colored state circle replaces the configured emoji in the status bar.
 
+
 ## Commands
 
 - `oQuota: Open Settings`
@@ -42,14 +48,11 @@ In Copilot modes, the colored state circle replaces the configured emoji in the 
 - `oQuota: Add Counter`
 - `oQuota: Remove Counter`
 
+Use `Ctrl+P`, type `>oQuota`, and run the commands to add, edit, or delete counters quickly from the Command Palette.
+
 The guided commands are the easiest way to work with counters because the stock VS Code Settings UI cannot truly hide mode-specific fields.
 
 ## Settings
-
-### General
-
-- `oquota.refreshIntervalSeconds`: refresh interval in seconds. Set it to `0` to use adaptive refresh.
-- `oquota.percentDecimals`: decimal places shown in percentage text.
 
 ### Counters
 
@@ -71,8 +74,6 @@ Example `settings.json`:
 
 ```json
 {
-  "oquota.refreshIntervalSeconds": 0,
-  "oquota.percentDecimals": 0,
   "oquota.counters": [
     {
       "enabled": true,
@@ -144,7 +145,7 @@ Available Copilot display modes:
 - `raw-remaining`: shows remaining premium interactions as the raw value and percentage, for example `1405 (93.6%)`
 - `raw-consumption`: shows consumed premium interactions as the raw value and percentage, for example `95 (6.0%)`
 - `consumption`: shows `theoretical cycle progress by billing-cycle day count` beside `actual consumed percent`, for example `10.0% 6.0%`
-- `remaining-pool`: shows `today consumption/pool size (percent)` with the pool bar, where pool size is derived from the billing-cycle day target and the displayed percentage caps at `100%` once the pool is exhausted, for example `25/250 (10.0%)`
+- `remaining-pool`: shows `today consumption/pool size (percent)` with the pool bar, where pool size is derived from the billing-cycle day target, for example `25/250 (10.0%)`
 - `average-calibration`: shows `today consumption/average consumption (percent)` with the average bar and projected days, for example `25/50 (50.0%) +2d`
 
 If there is not enough prior local history yet, oQuota anchors consumption tracking from the first locally recorded snapshot so the consumption view starts at `0%` and then grows from there.

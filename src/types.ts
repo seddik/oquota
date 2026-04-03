@@ -2,11 +2,6 @@ export type CounterMode = 'day-of-year' | 'month' | 'year' | 'day' | 'range' | '
 
 export type CopilotDisplayMode = 'raw-remaining' | 'raw-consumption' | 'consumption' | 'remaining-pool' | 'average-calibration';
 
-export interface GeneralConfiguration {
-  refreshIntervalSeconds: number;
-  percentDecimals: number;
-}
-
 export interface CounterConfigurationInput {
   enabled: boolean;
   label: string;
@@ -26,7 +21,6 @@ export interface CounterConfiguration extends CounterConfigurationInput {
 }
 
 export interface ExtensionConfiguration {
-  general: GeneralConfiguration;
   counters: CounterConfiguration[];
 }
 

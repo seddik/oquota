@@ -6,7 +6,6 @@ import {
   CopilotDisplayMode,
   CounterMode,
   ExtensionConfiguration,
-  GeneralConfiguration,
 } from './types';
 
 const SECTION = 'oquota';
@@ -19,10 +18,9 @@ export function getConfigurationSection(): string {
 
 export function readExtensionConfiguration(): ExtensionConfiguration {
   const configuration = vscode.workspace.getConfiguration(SECTION);
-  const general = readGeneralConfiguration(configuration);
   const counters = readCounterConfigurations(configuration);
 
-  return { general, counters };
+  return { counters };
 }
 
 export function createCounterInput(mode: CounterMode = 'day-of-year'): CounterConfigurationInput {
@@ -50,13 +48,6 @@ export function readStoredCounterInputs(): CounterConfigurationInput[] {
 export function persistCounterInputs(counters: CounterConfigurationInput[]): Thenable<void> {
   const configuration = vscode.workspace.getConfiguration(SECTION);
   return configuration.update(COUNTERS_KEY, counters.map((counter) => normalizeCounterInput(counter)), vscode.ConfigurationTarget.Global);
-}
-
-function readGeneralConfiguration(configuration: vscode.WorkspaceConfiguration): GeneralConfiguration {
-  return {
-    refreshIntervalSeconds: configuration.get<number>('refreshIntervalSeconds', 0),
-    percentDecimals: configuration.get<number>('percentDecimals', 0),
-  };
 }
 
 function readCounterConfigurations(configuration: vscode.WorkspaceConfiguration): CounterConfiguration[] {

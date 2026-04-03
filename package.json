@@ -2,15 +2,15 @@
   "name": "oquota",
   "displayName": "oQuota",
   "description": "Quota and progress counters for time windows, deadlines, and GitHub Copilot insights directly in the VS Code status bar.",
-  "version": "0.1.0",
-  "publisher": "seddik",
+  "version": "1.0.0",
+  "publisher": "OptimIT",
   "license": "SEE LICENSE IN LICENSE",
   "author": {
     "name": "LARABA MOHAMMED SEDDIK"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/seddik/oquota.git"
+    "url": "https://github.com/seddik/oquota"
   },
   "bugs": {
     "url": "https://github.com/seddik/oquota/issues"
@@ -97,28 +97,10 @@
       {
         "title": "oQuota",
         "properties": {
-          "oquota.refreshIntervalSeconds": {
-            "type": "number",
-            "default": 0,
-            "minimum": 0,
-            "maximum": 3600,
-            "scope": "window",
-            "order": 1,
-            "markdownDescription": "Refresh interval in seconds. Set to `0` to use adaptive refresh: Copilot every 60 seconds, workday counters every 5 minutes, and the other counters every hour."
-          },
-          "oquota.percentDecimals": {
-            "type": "integer",
-            "default": 0,
-            "minimum": 0,
-            "maximum": 2,
-            "scope": "window",
-            "order": 2,
-            "markdownDescription": "How many decimal places to show in percentage text."
-          },
           "oquota.counters": {
             "type": "array",
             "scope": "window",
-            "order": 3,
+            "order": 1,
             "default": [
               {
                 "enabled": true,
@@ -134,7 +116,7 @@
                 "copilotDisplayMode": "consumption"
               }
             ],
-            "markdownDescription": "Dynamic list of counters shown on the right side of the status bar. Clicking a counter or running the oQuota commands is usually more convenient than editing the raw array manually.",
+            "markdownDescription": "Dynamic list of counters shown on the right side of the status bar. Copilot and day counters refresh every minute. The other counter types refresh every hour. Clicking a counter or running the oQuota commands is usually more convenient than editing the raw array manually.",
             "items": {
               "type": "object",
               "additionalProperties": false,

@@ -2,13 +2,13 @@ import {
   CounterConfiguration,
   CounterEvaluation,
   CopilotQuotaResult,
-  GeneralConfiguration,
   ProgressWindow,
 } from './types';
 
+const DEFAULT_PERCENT_DECIMALS = 0;
+
 export function evaluateCounter(
   counter: CounterConfiguration,
-  general: GeneralConfiguration,
   now: Date = new Date(),
   copilotQuota?: CopilotQuotaResult,
 ): CounterEvaluation {
@@ -40,7 +40,7 @@ export function evaluateCounter(
     };
   }
 
-  const percentage = formatPercent(result.window.progress, general.percentDecimals);
+  const percentage = formatPercent(result.window.progress, DEFAULT_PERCENT_DECIMALS);
   const text = formatProgressText(counter, result.window, percentage);
   const tooltip = [
     `${titleForCounter(counter)}: ${percentage}`,

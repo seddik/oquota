@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0
+## 1.0.0
 
 - Initial release of oQuota.
 - Added a flexible number of configurable status bar counters with a default day-of-year counter.

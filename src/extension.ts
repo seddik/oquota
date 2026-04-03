@@ -17,6 +17,9 @@ import {
   ExtensionConfiguration,
 } from './types';
 
+const DEFAULT_REFRESH_INTERVAL_SECONDS = 3600;
+const FAST_REFRESH_INTERVAL_SECONDS = 60;
+
 const OPEN_SETTINGS_COMMAND = 'oquota.openSettings';
 const CONFIGURE_COUNTER_COMMAND = 'oquota.configureCounter';
 const ADD_COUNTER_COMMAND = 'oquota.addCounter';
@@ -92,7 +95,7 @@ async function render(configuration: ExtensionConfiguration): Promise<void> {
   }
 
   const evaluations = configuration.counters.map((counter) => {
-    return evaluateCounter(counter, configuration.general, new Date(), copilotQuota);
+    return evaluateCounter(counter, new Date(), copilotQuota);
   });
 
   statusBarController.render(evaluations);
@@ -100,7 +103,7 @@ async function render(configuration: ExtensionConfiguration): Promise<void> {
 
 function resetRefreshTimer(configuration: ExtensionConfiguration): void {
   clearRefreshTimer();
-  const refreshIntervalSeconds = getRefreshIntervalSeconds(configuration, new Date());
+  const refreshIntervalSeconds = getRefreshIntervalSeconds(configuration);
   refreshTimer = setInterval(() => {
     const latestConfiguration = readExtensionConfiguration();
     clearCopilotQuotaCache();
@@ -487,28 +490,23 @@ async function maybeRequestGitHubSession(): Promise<void> {
   }
 }
 
-function getRefreshIntervalSeconds(configuration: ExtensionConfiguration, now: Date): number {
-  if (configuration.general.refreshIntervalSeconds > 0) {
-    return Math.max(configuration.general.refreshIntervalSeconds, 10);
-  }
-
+function getRefreshIntervalSeconds(configuration: ExtensionConfiguration): number {
   const enabledCounters = configuration.counters.filter((counter) => counter.enabled);
   if (enabledCounters.length === 0) {
-    return 3600;
+    return DEFAULT_REFRESH_INTERVAL_SECONDS;
   }
 
   return enabledCounters.reduce((minimum, counter) => {
-    return Math.min(minimum, getSuggestedRefreshIntervalSeconds(counter, now));
+    return Math.min(minimum, getSuggestedRefreshIntervalSeconds(counter));
   }, Number.POSITIVE_INFINITY);
 }
 
-function getSuggestedRefreshIntervalSeconds(counter: CounterConfiguration, _now: Date): number {
+function getSuggestedRefreshIntervalSeconds(counter: CounterConfiguration): number {
   switch (counter.mode) {
     case 'copilot':
-      return 60;
     case 'day':
-      return 300;
+      return FAST_REFRESH_INTERVAL_SECONDS;
     default:
-      return 3600;
+      return DEFAULT_REFRESH_INTERVAL_SECONDS;
   }
 }
