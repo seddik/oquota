@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 
 import { CounterEvaluation } from './types';
 
+const RIGHT_EDGE_PRIORITY_BASE = -10_000;
+
 export class StatusBarController implements vscode.Disposable {
   private readonly items = new Map<number, vscode.StatusBarItem>();
 
@@ -52,7 +54,7 @@ export class StatusBarController implements vscode.Disposable {
       return existing;
     }
 
-    const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 1_000 - slot);
+    const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, RIGHT_EDGE_PRIORITY_BASE + slot);
     item.name = `oQuota Counter ${slot}`;
     this.items.set(slot, item);
 

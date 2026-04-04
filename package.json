@@ -2,7 +2,7 @@
   "name": "oquota",
   "displayName": "oQuota",
   "description": "Quota and progress counters for time windows, deadlines, and GitHub Copilot insights directly in the VS Code status bar.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "OptimIT",
   "license": "SEE LICENSE IN LICENSE",
   "author": {

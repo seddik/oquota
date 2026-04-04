@@ -150,14 +150,19 @@ function evaluateCopilotCounter(
   const paceIndicator = getPaceIndicator(headroomPercentOfBudget, totalConsumedPercent, expectedConsumedPercent);
   const poolBar = buildMiniBar(Math.min(Math.max(poolConsumptionRatio, 0), 1));
   const idealDailyPercent = 100 / cycleTotalDays;
-  const actualAverageDailyPercent = data.cycleDayNumber > 0 ? totalConsumedPercent / data.cycleDayNumber : totalConsumedPercent;
+  const actualAverageDailyPercent = toPercent(data.averageDailyConsumed, data.entitlement);
   const averageConsumptionRatio = data.averageDailyConsumed > 0 ? data.todayConsumed / data.averageDailyConsumed : (data.todayConsumed > 0 ? 1 : 0);
   const averageBar = buildMiniBar(Math.min(Math.max(averageConsumptionRatio, 0), 1));
-  const projectedDayDelta = data.daysAvailableAtCurrentPace === null
-    ? data.remainingDays
-    : data.daysAvailableAtCurrentPace - data.remainingDays;
-  const calibrationIndicator = getCalibrationIndicator(projectedDayDelta);
+  const averagePercentUsed = toPercent(data.todayConsumed, data.averageDailyConsumed);
+  const averageIsWarmingUp = data.averageDailyConsumed <= 0;
+  const projectedDayDelta = data.daysAvailableAtCurrentPace === null ? 0 : data.daysAvailableAtCurrentPace - data.remainingDays;
+  const calibrationIndicator = averageIsWarmingUp
+    ? { emoji: '⚫', label: 'Average is warming up. Need at least one completed prior day.' }
+    : getCalibrationIndicator(projectedDayDelta);
   const lowDaysWarning = getLowDaysWarning(data.daysAvailableAtCurrentPace, data.remaining);
+  const averageComparisonText = averageIsWarmingUp
+    ? `${formatCountValue(data.todayConsumed)}/--`
+    : `${formatCountValue(data.todayConsumed)}/${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(averagePercentUsed)})`;
 
   let text = '';
   let summaryLine = '';
@@ -187,9 +192,13 @@ function evaluateCopilotCounter(
         : `Today's pool ${formatCountValue(todayPoolValue)} | cycle pace target ${formatCompactPercent(expectedConsumedPercent)} | total consumed ${formatCompactPercent(totalConsumedPercent)}`;
       break;
     case 'average-calibration':
-      text = `${calibrationIndicator.emoji} ${formatCopilotLabelPrefix(counter)}${averageBar} ${formatCountValue(data.todayConsumed)}/${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(toPercent(data.todayConsumed, data.averageDailyConsumed))}) ${formatSignedDays(projectedDayDelta)}`.trim();
-      summaryLine = `Average calibration: ${formatCountValue(data.todayConsumed)}/${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(toPercent(data.todayConsumed, data.averageDailyConsumed))}) ${formatSignedDays(projectedDayDelta)}`;
-      detailLine = `Today consumed ${formatCountValue(data.todayConsumed)} | average consumed ${formatCountValue(data.averageDailyConsumed)} | ideal ${formatCompactPercent(idealDailyPercent)}`;
+      text = `${calibrationIndicator.emoji} ${formatCopilotLabelPrefix(counter)}${averageBar} ${averageComparisonText}${averageIsWarmingUp ? '' : ` ${formatSignedDays(projectedDayDelta)}`}`.trim();
+      summaryLine = averageIsWarmingUp
+        ? `Average calibration: ${averageComparisonText} | warming up`
+        : `Average calibration: ${averageComparisonText} ${formatSignedDays(projectedDayDelta)}`;
+      detailLine = averageIsWarmingUp
+        ? `Today consumed ${formatCountValue(data.todayConsumed)} | average before today is still warming up | ideal ${formatCompactPercent(idealDailyPercent)}`
+        : `Today consumed ${formatCountValue(data.todayConsumed)} | average before today ${formatCountValue(data.averageDailyConsumed)} | ideal ${formatCompactPercent(idealDailyPercent)}`;
       break;
   }
 
@@ -229,8 +238,12 @@ function evaluateCopilotCounter(
       `Remaining pool now: ${formatCountValue(remainingPoolValue)} (${formatCompactPercent(remainingPoolPercent)})`,
       `Today vs pool: ${formatCountValue(data.todayConsumed)}/${formatCountValue(todayPoolValue)} (${formatCompactPercent(poolPercentUsed)})`,
       poolOverflowRequests > 0 ? `Pool overflow: ${formatCountValue(poolOverflowRequests)} requests beyond the available pool.` : 'Pool overflow: none',
-      `Average daily burn: ${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(actualAverageDailyPercent)})`,
-      `Today vs average: ${formatCountValue(data.todayConsumed)}/${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(toPercent(data.todayConsumed, data.averageDailyConsumed))})`,
+      averageIsWarmingUp
+        ? 'Average daily burn before today: still warming up.'
+        : `Average daily burn before today: ${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(actualAverageDailyPercent)})`,
+      averageIsWarmingUp
+        ? `Today vs average: ${formatCountValue(data.todayConsumed)}/--`
+        : `Today vs average: ${formatCountValue(data.todayConsumed)}/${formatCountValue(data.averageDailyConsumed)} (${formatCompactPercent(averagePercentUsed)})`,
       `Ideal daily burn: ${formatCompactPercent(idealDailyPercent)}`,
       projectionLine,
       daysLeftLine,

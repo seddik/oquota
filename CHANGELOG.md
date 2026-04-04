@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1
+
+- Removed the global refresh interval and percent decimal settings from the contributed Settings UI.
+- Fixed refresh scheduling so Copilot and workday counters update every 60 seconds and all other counters update every hour.
+- Fixed Copilot Average calibration so the baseline excludes today's usage instead of averaging against a partial current day.
+- Added a warm-up state for Copilot Average when there is not yet a completed prior day in the billing cycle.
+- Adjusted oQuota status bar priorities so its counters appear at the far right edge of the VS Code status bar.
+
 ## 1.0.0
 
 - Initial release of oQuota.

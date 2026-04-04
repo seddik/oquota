@@ -142,10 +142,7 @@ async function fetchCopilotQuota(context?: vscode.ExtensionContext): Promise<Cop
   const billingCycleRemainingPercent = (1 - billingCycleProgress) * 100;
   const elapsedDays = Math.max(snapshotTime.getTime() - cycleStart.getTime(), 0) / 86_400_000;
   const remainingDays = Math.max(resetDate.getTime() - snapshotTime.getTime(), 0) / 86_400_000;
-  const averageDailyUsage = elapsedDays > 0 && used > 0 ? used / elapsedDays : 0;
-  const daysAvailableAtCurrentPace = averageDailyUsage > 0 ? remaining / averageDailyUsage : null;
   const cycleDayNumber = Math.max(getCalendarDayDistance(cycleStart, snapshotTime) + 1, 1);
-  const averageDailyConsumed = cycleDayNumber > 0 ? used / cycleDayNumber : used;
   const history = context ? await recordSnapshotAndLoadHistory(context, {
     timestampUtc: snapshotTime.toISOString(),
     used,
@@ -153,6 +150,10 @@ async function fetchCopilotQuota(context?: vscode.ExtensionContext): Promise<Cop
     resetDateUtc: resetDate.toISOString(),
   }) : [];
   const todayUsage = deriveTodayConsumption(history, cycleStart, snapshotTime, used, resetDate.toISOString());
+  const completedDaysBeforeToday = Math.max(cycleDayNumber - 1, 0);
+  const usedBeforeToday = Math.max(used - todayUsage.todayConsumed, 0);
+  const averageDailyConsumed = completedDaysBeforeToday > 0 ? usedBeforeToday / completedDaysBeforeToday : 0;
+  const daysAvailableAtCurrentPace = averageDailyConsumed > 0 ? remaining / averageDailyConsumed : null;
 
   const data: CopilotQuotaSnapshot = {
     plan: apiData.copilot_plan?.trim() || 'GitHub Copilot',
